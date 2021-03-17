@@ -19,6 +19,7 @@ extern std::vector<ClipboardFile> clipboard;
 extern bool clipboardOn;
 extern bool clipboardUsed;
 
+extern uint32_t crcOfFile(const char* filepath);
 extern void printBytes(int bytes);
 extern void printBytesAlign(int bytes);
 

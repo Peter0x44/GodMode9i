@@ -2,6 +2,8 @@
 #include <nds.h>
 #include <fat.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
 #include <dirent.h>
 #include <vector>
 
@@ -17,6 +19,38 @@ extern PrintConsole topConsole, bottomConsole;
 std::vector<ClipboardFile> clipboard;
 bool clipboardOn = false;
 bool clipboardUsed = false;
+
+
+
+static uint32_t crc32_for_byte(uint32_t r) {
+	for (int j = 0; j < 8; ++j)
+		r = (r & 1? 0: (uint32_t)0xEDB88320L) ^ r >> 1;
+	return r ^ (uint32_t)0xFF000000L;
+}
+
+static void crc32(const void *data, size_t n_bytes, uint32_t* crc) {
+	static uint32_t table[0x100];
+	if (!*table)
+		for (size_t i = 0; i < 0x100; ++i)
+			table[i] = crc32_for_byte(i);
+	for (size_t i = 0; i < n_bytes; ++i)
+		*crc = table[(uint8_t)*crc ^ ((uint8_t*)data)[i]] ^ *crc >> 8;
+}
+
+
+uint32_t crcOfFile(const char* filepath)
+{
+	FILE* fp;
+	char* buf = (char*) malloc(1L << 15);
+	uint32_t crc = 0;
+	fp = fopen(filepath, "rb");
+	while (!feof(fp) && !ferror(fp))
+		crc32(buf, fread(buf, 1, sizeof(buf), fp), &crc);
+	free(buf);
+	fclose(fp);
+	return crc;
+}
+
 
 void printBytes(int bytes)
 {

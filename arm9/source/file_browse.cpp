@@ -242,6 +242,8 @@ FileOperation fileBrowse_A(DirEntry* entry, char path[PATH_MAX]) {
 		assignedOp[++maxCursors] = FileOperation::copyFatOut;
 		printf("   Copy to fat:/gm9i/out\n");
 	}
+	assignedOp[++maxCursors] = FileOperation::calculateCRC32;
+	printf("   Calculate CRC32\n");
 	printf("\n");
 	printf("(<A> select, <B> cancel)");
 	consoleSelect(&bottomConsole);
@@ -374,6 +376,11 @@ FileOperation fileBrowse_A(DirEntry* entry, char path[PATH_MAX]) {
 						imgCurrentDrive = currentDrive;
 						currentDrive = 6;
 					}
+					break;
+				} case FileOperation::calculateCRC32: {
+					printf("%#010lx\n", crcOfFile(strcat(getcwd(path, PATH_MAX), entry->name.c_str())));
+					while (true) {swiWaitForVBlank();}
+					// TODO implement a more sensible way of displaying the CRC32 than hanging the console
 					break;
 				} case FileOperation::none: {
 					break;
